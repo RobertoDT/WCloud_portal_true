@@ -21,7 +21,3 @@ Route::resource('/batteries', 'BatteryController');
 Route::resource('/lamps', 'LampController');
 Route::resource('/modules', 'ModuleController');
 Route::resource('/systems', 'SystemController');
-
-Auth::routes();
-
-Route::get('/home', 'HomeController@index')->name('home');
