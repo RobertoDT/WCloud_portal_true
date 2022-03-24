@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
-use App\Battery;
+use App\Module;
 use App\System;
 
-class BatteryController extends Controller
+class ModuleController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,8 +18,8 @@ class BatteryController extends Controller
      */
     public function index()
     {
-        $batteries = Battery::all();
-        return view('batteries.index', compact('batteries'));
+        $modules = Module::all();
+        return view('modules.index', compact('modules'));
     }
 
     /**
@@ -28,7 +29,7 @@ class BatteryController extends Controller
      */
     public function create()
     {
-        return view('batteries.create');
+        return view('modules.create');
     }
 
     /**
@@ -41,27 +42,23 @@ class BatteryController extends Controller
     {
         $data = $request->all();
         
-        //Validazione dei dati in ingresso
+        //Validazione dati in ingresso
         $request->validate([
-            'modello' => 'required|unique:batteries|max:150',
+            'modello' => 'required|unique:modules|max:150',
             'descrizione' => 'required',
-            'capacita' => 'required',
-            'potenza' => 'required',
-            'tensione' => 'required'
+            'potenza' => 'required'
         ]);
 
-        $newBattery = new Battery;
-        $newBattery->modello = $data['modello'];
-        $newBattery->capacita = $data['capacita'];
-        $newBattery->potenza = $data['potenza'];
-        $newBattery->tensione = $data['tensione'];
-        $newBattery->descrizione = $data['descrizione'];
+        $newModule = new Module;
+        $newModule->modello = $data['modello'];
+        $newModule->descrizione = $data['descrizione'];
+        $newModule->potenza = $data['potenza'];
 
-        $newBattery->save();
+        $newModule->save();
+        
+        session()->flash('created', 'Il modulo: '.$newModule->modello.' è stato creato correttamente');
 
-        session()->flash('created', 'La batteria: '.$newBattery->modello.' è stata creata correttamente');
-
-        return redirect()->route('batteries.index');
+        return redirect()->route('modules.index');
     }
 
     /**
@@ -83,8 +80,8 @@ class BatteryController extends Controller
      */
     public function edit($id)
     {
-        $battery = Battery::find($id);
-        return view('batteries.edit', compact('battery'));
+        $module = Module::find($id);
+        return view('modules.edit', compact('module'));
     }
 
     /**
@@ -103,20 +100,18 @@ class BatteryController extends Controller
             'modello' => [
                 'required',
                 'max:150',
-                Rule::unique('batteries')->ignore($id),
+                Rule::unique('modules')->ignore($id),
             ],
             'descrizione' => 'required',
-            'capacita' => 'required',
-            'potenza' => 'required',
-            'tensione' => 'required'
+            'potenza' => 'required'
         ]);
 
-        $battery = Battery::find($id);
-        $battery->update($data);
+        $module = Module::find($id);
+        $module->update($data);
+        
+        session()->flash('edited', 'Il modulo: '.$module->modello.' è stato modificato correttamente');
 
-        session()->flash('edited', 'La batteria: '.$battery->modello.' è stata modificata correttamente');
-
-        return redirect()->route('batteries.index');
+        return redirect()->route('modules.index');
     }
 
     /**
@@ -127,21 +122,21 @@ class BatteryController extends Controller
      */
     public function destroy($id)
     {
-        $battery = Battery::find($id);
+        $module = Module::find($id);
         
         $systems_assoc = DB::table('systems')
-                        ->join('batteries', 'systems.battery_id', '=', 'batteries.id')
-                        ->where('systems.battery_id', '=', $id)
+                        ->join('modules', 'systems.module_id', '=', 'modules.id')
+                        ->where('systems.module_id', '=', $id)
                         ->select('systems.*')
                         ->get();
 
         if(count($systems_assoc) > 0){
-            session()->flash('not_deleted', 'Non è stato possibile eliminare la batteria: '.$battery->modello.' poichè associata ad un sistema esistente');
-            return redirect()->route('batteries.index');
+            session()->flash('not_deleted', 'Non è stato possibile eliminare il modulo: '.$module->modello.' poichè associato ad un sistema esistente');
+            return redirect()->route('modules.index');
         }else{
-            $battery->delete();
-            session()->flash('deleted', 'La batteria: '.$battery->modello.' è stata eliminata correttamente');
-            return redirect()->route('batteries.index');
+            $module->delete();
+            session()->flash('deleted', 'Il modulo: '.$module->modello.' è stato eliminato correttamente');
+            return redirect()->route('modules.index');
         }
         
     }

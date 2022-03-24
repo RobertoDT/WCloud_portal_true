@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\System;
-use App\Module;
-use App\Lamp;
-use App\Battery;
 
 class SystemController extends Controller
 {
@@ -18,7 +16,16 @@ class SystemController extends Controller
      */
     public function index()
     {
-        $systems = System::all();
+        //ricavo utente autenticato in sessione
+        $user_id = Auth::id();
+        
+        //visualizzo solamente i sistemi associati a quell'utente        
+        $systems = System::join('user_system', 'systems.id', '=', 'user_system.system_id')
+                        ->where('user_system.user_id', '=', $user_id)
+                        ->select('systems.*')
+                        ->get();
+                        
+        //ritorno la vista con elenco dei sistemi associati a quell'utente
         return view('systems.index', compact('systems'));
     }
 
@@ -29,11 +36,7 @@ class SystemController extends Controller
      */
     public function create()
     {
-        $modules = Module::all();
-        $lamps = Lamp::all();
-        $batteries = Battery::all();
-        
-        return view('systems.create', compact('modules', 'lamps', 'batteries'));
+        //
     }
 
     /**
@@ -44,42 +47,7 @@ class SystemController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->all();
-        
-        //validazione dei dati in ingresso
-        $request->validate([
-            'seriale' => 'required|unique:systems',
-            'n_telefono' => 'required|unique:systems',
-            'citta_installazione' => 'required|max:50',
-            'via' => 'required|max:100',
-            'seriale_via' => 'integer',
-            'module_id' => 'required|integer',
-            'lamp_id' => 'required|integer',
-            'battery_id' => 'required|integer',
-            'data_installazione' => 'required|date',
-            'hardware_regolatore' => 'required|in:SPB-20-GSM,SPB-LS-GSM,SPB-LS-GSM-PB-LI',
-            'utc' => 'required|max:3',
-        ]);
-
-        $newSystem = new System;
-        $newSystem->seriale = $data['seriale'];
-        $newSystem->n_telefono = $data['n_telefono'];
-        $newSystem->citta_installazione = $data['citta_installazione'];
-        $newSystem->via = $data['via'];
-        $newSystem->seriale_via = $data['seriale_via'];
-        $newSystem->module_id = $data['module_id'];
-        $newSystem->lamp_id = $data['lamp_id'];
-        $newSystem->battery_id = $data['battery_id'];
-        $newSystem->data_installazione = $data['data_installazione'];
-        $newSystem->hardware_regolatore = $data['hardware_regolatore'];
-        $newSystem->utc = $data['utc'];
-        $newSystem->note = $data['note'];
-
-        $newSystem->save();
-        
-        session()->flash('created', 'Il sistema di '.$newSystem->citta_installazione.' è stato creato correttamente');
-
-        return redirect()->route('systems.index');
+        //
     }
 
     /**
@@ -90,8 +58,7 @@ class SystemController extends Controller
      */
     public function show($id)
     {
-        $system = System::find($id);
-        return view('systems.show', compact('system'));
+        //
     }
 
     /**
@@ -102,13 +69,7 @@ class SystemController extends Controller
      */
     public function edit($id)
     {
-        $system = System::find($id);
-
-        $modules = Module::all();
-        $lamps = Lamp::all();
-        $batteries = Battery::all();
-
-        return view('systems.edit', compact('system', 'modules', 'lamps', 'batteries'));
+        //
     }
 
     /**
@@ -120,35 +81,7 @@ class SystemController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = $request->all();
-        
-        //validazione dei dati in ingresso
-        $request->validate([
-            'seriale' => [
-                'required',
-                Rule::unique('systems')->ignore($id),
-            ],
-            'n_telefono' => [
-                'required',
-                Rule::unique('systems')->ignore($id),
-            ],
-            'citta_installazione' => 'required|max:50',
-            'via' => 'required|max:100',
-            'module_id' => 'required|integer',
-            'lamp_id' => 'required|integer',
-            'battery_id' => 'required|integer',
-            'data_installazione' => 'required|date',
-            'hardware_regolatore' => 'required|in:SPB-20-GSM,SPB-LS-GSM,SPB-LS-GSM-PB-LI',
-            'utc' => 'required|max:3',
-        ]);
-
-        $system = System::find($id);
-        
-        $system->update($data);
-
-        session()->flash('edited', 'Il sistema di '.$system->citta_installazione.' è stato modificato correttamente');
-
-        return redirect()->route('systems.index');
+        //
     }
 
     /**
@@ -159,12 +92,6 @@ class SystemController extends Controller
      */
     public function destroy($id)
     {
-        $system = System::find($id);
-        
-        $system->delete();
-
-        session()->flash('deleted', 'Il sistema di '.$system->citta_installazione.' è stato eliminato correttamente');
-
-        return redirect()->route('systems.index');
+        //
     }
 }

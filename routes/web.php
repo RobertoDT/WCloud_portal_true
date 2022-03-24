@@ -17,15 +17,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::resource('/batteries', 'BatteryController');
-Route::resource('/lamps', 'LampController');
-Route::resource('/modules', 'ModuleController');
-Route::resource('/systems', 'SystemController');
-
 Auth::routes();
 
 Route::prefix('admin')->namespace('Admin')->middleware('auth')->group(function (){
     Route::get('/', 'HomeController@index')->name('home');
+
+    Route::resource('/batteries', 'BatteryController');
+    Route::resource('/lamps', 'LampController');
+    Route::resource('/modules', 'ModuleController');
+    Route::resource('/systems', 'SystemController');
 });
+
+Route::resource('/systems', 'SystemController');
 
 //Route::get('/home', 'HomeController@index')->name('home');

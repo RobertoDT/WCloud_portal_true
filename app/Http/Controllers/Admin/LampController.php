@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
-use App\Module;
+use App\Lamp;
 use App\System;
 
-class ModuleController extends Controller
+class LampController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,8 +18,8 @@ class ModuleController extends Controller
      */
     public function index()
     {
-        $modules = Module::all();
-        return view('modules.index', compact('modules'));
+        $lamps = Lamp::all();
+        return view('lamps.index', compact('lamps'));
     }
 
     /**
@@ -28,7 +29,7 @@ class ModuleController extends Controller
      */
     public function create()
     {
-        return view('modules.create');
+        return view('lamps.create');
     }
 
     /**
@@ -43,21 +44,21 @@ class ModuleController extends Controller
         
         //Validazione dati in ingresso
         $request->validate([
-            'modello' => 'required|unique:modules|max:150',
+            'modello' => 'required|unique:lamps|max:150',
             'descrizione' => 'required',
             'potenza' => 'required'
         ]);
 
-        $newModule = new Module;
-        $newModule->modello = $data['modello'];
-        $newModule->descrizione = $data['descrizione'];
-        $newModule->potenza = $data['potenza'];
+        $newLamp = new Lamp;
+        $newLamp->modello = $data['modello'];
+        $newLamp->descrizione = $data['descrizione'];
+        $newLamp->potenza = $data['potenza'];
 
-        $newModule->save();
+        $newLamp->save();
         
-        session()->flash('created', 'Il modulo: '.$newModule->modello.' è stato creato correttamente');
+        session()->flash('created', 'La lampada: '.$newLamp->modello.' è stata creata correttamente');
 
-        return redirect()->route('modules.index');
+        return redirect()->route('lamps.index');
     }
 
     /**
@@ -79,8 +80,8 @@ class ModuleController extends Controller
      */
     public function edit($id)
     {
-        $module = Module::find($id);
-        return view('modules.edit', compact('module'));
+        $lamp = Lamp::find($id);
+        return view('lamps.edit', compact('lamp'));
     }
 
     /**
@@ -99,18 +100,18 @@ class ModuleController extends Controller
             'modello' => [
                 'required',
                 'max:150',
-                Rule::unique('modules')->ignore($id),
+                Rule::unique('lamps')->ignore($id),
             ],
             'descrizione' => 'required',
             'potenza' => 'required'
         ]);
 
-        $module = Module::find($id);
-        $module->update($data);
-        
-        session()->flash('edited', 'Il modulo: '.$module->modello.' è stato modificato correttamente');
+        $lamp = Lamp::find($id);
+        $lamp->update($data);
 
-        return redirect()->route('modules.index');
+        session()->flash('edited', 'La lampada: '.$lamp->modello.' è stata modificata correttamente');
+        
+        return redirect()->route('lamps.index');
     }
 
     /**
@@ -121,21 +122,21 @@ class ModuleController extends Controller
      */
     public function destroy($id)
     {
-        $module = Module::find($id);
-        
+        $lamp = Lamp::find($id);
+
         $systems_assoc = DB::table('systems')
-                        ->join('modules', 'systems.module_id', '=', 'modules.id')
-                        ->where('systems.module_id', '=', $id)
+                        ->join('lamps', 'systems.lamp_id', '=', 'lamps.id')
+                        ->where('systems.lamp_id', '=', $id)
                         ->select('systems.*')
                         ->get();
 
         if(count($systems_assoc) > 0){
-            session()->flash('not_deleted', 'Non è stato possibile eliminare il modulo: '.$module->modello.' poichè associato ad un sistema esistente');
-            return redirect()->route('modules.index');
+            session()->flash('not_deleted', 'Non è stato possibile eliminare la lampada: '.$lamp->modello.' poichè associata ad un sistema esistente');
+            return redirect()->route('lamps.index');
         }else{
-            $module->delete();
-            session()->flash('deleted', 'Il modulo: '.$module->modello.' è stato eliminato correttamente');
-            return redirect()->route('modules.index');
+            $lamp->delete();
+            session()->flash('deleted', 'La lampada: '.$lamp->modello.' è stata eliminata correttamente');
+            return redirect()->route('lamps.index');
         }
         
     }
